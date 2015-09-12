@@ -52,6 +52,7 @@
     <Compile Include="AccessLogs\CustomAccessLogParser.cs" />
     <Compile Include="AccessLogs\IAccessLogParser.cs" />
     <Compile Include="AccessLogs\InvalidAccessLogLineException.cs" />
+    <Compile Include="ArgumentExtensions.cs" />
     <Compile Include="Reporting\Database.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
