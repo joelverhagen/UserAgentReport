@@ -2,10 +2,15 @@
 
 ## Building Dependencies
 
+### Current Versions
+
+- SQLite: 3.8.11.1
+- System.Data.SQLite: 1.0.98.1
+- EntityFramework: 6.1.3
+
 ### Requirements
 
 - Visual Studio 2012 or later with native tools installed.
-
 
 ### SQLite (native DLL)
 
