@@ -7,7 +7,7 @@ namespace Knapcode.UserAgentReport
     public static class ArgumentExtensions
     {
         private const string OptionPrefix = "-";
-        private static readonly Regex AllOptionPrefixes = new Regex(@"^\s*[\-\/]+");
+        private static readonly Regex AllOptionPrefixes = new Regex(@"^\s*-+");
 
         public static bool HasOption(this string[] args, string option)
         {
@@ -24,6 +24,7 @@ namespace Knapcode.UserAgentReport
             var match = args
                 .SkipWhile(a => !AllOptionPrefixes.Replace(a, OptionPrefix).Equals(OptionPrefix + option, StringComparison.OrdinalIgnoreCase))
                 .ToArray();
+
             if (!match.Any())
             {
                 return valueIfNotFound;
