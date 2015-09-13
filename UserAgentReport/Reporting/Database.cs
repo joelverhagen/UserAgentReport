@@ -94,18 +94,18 @@ namespace Knapcode.UserAgentReport.Reporting
 
         private void InitializeLatestTables(SQLiteConnection connection)
         {
-            Execute(connection, "DROP TABLE IF EXISTS user_agents_latest");
-            Execute(connection, "DROP TABLE IF EXISTS user_agent_times_latest");
-            Execute(connection, "CREATE TABLE user_agents_latest (id INTEGER PRIMARY KEY, user_agent TEXT UNIQUE)");
-            Execute(connection, "CREATE TABLE user_agent_times_latest (user_agent_id INTEGER, date_time INTEGER)");
+            Execute(connection, "DROP TABLE IF EXISTS user_agents_latest; " +
+                                "DROP TABLE IF EXISTS user_agent_times_latest; " +
+                                "CREATE TABLE user_agents_latest (id INTEGER PRIMARY KEY, user_agent TEXT UNIQUE); " +
+                                "CREATE TABLE user_agent_times_latest (user_agent_id INTEGER, date_time INTEGER);");
         }
 
         private void SwapLatestTables(SQLiteConnection connection)
         {
-            Execute(connection, "DROP TABLE IF EXISTS user_agents");
-            Execute(connection, "DROP TABLE IF EXISTS user_agent_times");
-            Execute(connection, "ALTER TABLE user_agents_latest RENAME TO user_agents");
-            Execute(connection, "ALTER TABLE user_agent_times_latest RENAME TO user_agent_times");
+            Execute(connection, "DROP TABLE IF EXISTS user_agents;" +
+                                "DROP TABLE IF EXISTS user_agent_times; " +
+                                "ALTER TABLE user_agents_latest RENAME TO user_agents; " +
+                                "ALTER TABLE user_agent_times_latest RENAME TO user_agent_times;");
         }
 
         private void PersistEntry(SQLiteConnection connection, AccessLogEntry entry)
