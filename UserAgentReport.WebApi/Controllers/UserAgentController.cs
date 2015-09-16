@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Knapcode.UserAgentReport.Reporting;
 using Knapcode.UserAgentReport.WebApi.BusinessLogic;
 
 namespace Knapcode.UserAgentReport.WebApi.Controllers

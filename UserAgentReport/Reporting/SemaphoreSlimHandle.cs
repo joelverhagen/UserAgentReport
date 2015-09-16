@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 
-namespace Knapcode.UserAgentReport.WebApi.BusinessLogic
+namespace Knapcode.UserAgentReport.Reporting
 {
     public class SemaphoreSlimHandle : IDisposable
     {

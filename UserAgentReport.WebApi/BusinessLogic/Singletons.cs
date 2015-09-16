@@ -1,5 +1,8 @@
 ﻿using System;
+using System.IO;
 using System.Web;
+using Knapcode.UserAgentReport.AccessLogs;
+using Knapcode.UserAgentReport.Reporting;
 
 namespace Knapcode.UserAgentReport.WebApi.BusinessLogic
 {
@@ -17,7 +20,7 @@ namespace Knapcode.UserAgentReport.WebApi.BusinessLogic
         };
 
         private static readonly Lazy<UserAgentDatabaseUpdater> LazyUserAgentDatabaseUpdater = new Lazy<UserAgentDatabaseUpdater>(() => new UserAgentDatabaseUpdater(UserAgentDatabaseUpdaterSettings));
-        private static readonly Lazy<UserAgentDatabase> LazyUserAgentDatabase = new Lazy<UserAgentDatabase>(() => new UserAgentDatabase(DatabasePath));
+        private static readonly Lazy<UserAgentDatabase> LazyUserAgentDatabase = new Lazy<UserAgentDatabase>(() => new UserAgentDatabase(DatabasePath, TextWriter.Null, new CustomAccessLogParser()));
 
         public static UserAgentDatabaseUpdater UserAgentDatabaseUpdater
         {

@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{63C0E3BA-D79E-42FB-816F-147BFE12B096}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Knapcode.UserAgentReport</RootNamespace>
     <AssemblyName>Knapcode.UserAgentReport</AssemblyName>
@@ -30,20 +30,28 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Renci.SshNet">
-      <HintPath>..\packages\SSH.NET.2013.4.7\lib\net40\Renci.SshNet.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Data.SQLite, Version=1.0.98.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\System.Data.SQLite\2012\System.Data.SQLite.dll</HintPath>
+    <Reference Include="..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll">
+      <Name>Newtonsoft.Json</Name>
+    </Reference>
+    <Reference Include="..\packages\SSH.NET.2013.4.7\lib\net40\Renci.SshNet.dll">
+      <Name>Renci.SshNet</Name>
+    </Reference>
+    <Reference Condition="'$(OS)' != 'Unix'" Include="..\packages\System.Data.SQLite.Core.1.0.98.1\lib\net45\System.Data.SQLite.dll">
+      <Name>System.Data.SQLite</Name>
+    </Reference>
+    <Reference Condition="'$(OS)' == 'Unix'" Include="..\Dependencies\System.Data.SQLite\2012\System.Data.SQLite.dll">
+      <Name>System.Data.SQLite</Name>
+    </Reference>
+    <Reference Include="System.Net.Http" />
+    <Reference Include="..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll">
+      <Name>System.Net.Http.Formatting</Name>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -52,21 +60,32 @@
     <Compile Include="AccessLogs\CustomAccessLogParser.cs" />
     <Compile Include="AccessLogs\IAccessLogParser.cs" />
     <Compile Include="AccessLogs\InvalidAccessLogLineException.cs" />
-    <Compile Include="ArgumentExtensions.cs" />
-    <Compile Include="Reporting\Database.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AccessLogs\RegexAccessLogParser.cs" />
-    <Compile Include="Reporting\UserAgentCount.cs" />
+    <Compile Include="Reporting\JsonSerialization.cs" />
+    <Compile Include="Reporting\SemaphoreSlimHandle.cs" />
+    <Compile Include="Reporting\UserAgentAndCount.cs" />
+    <Compile Include="Reporting\UserAgentDatabase.cs" />
+    <Compile Include="Reporting\UserAgentDatabaseStatus.cs" />
+    <Compile Include="Reporting\UserAgentDatabaseStatusType.cs" />
+    <Compile Include="Reporting\UserAgentDatabaseUpdater.cs" />
+    <Compile Include="Reporting\UserAgentDatabaseUpdaterSettings.cs" />
+    <Compile Include="Reporting\UserAgentType.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="update.sh">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Condition="'$(OS)' != 'Unix' And Exists('..\packages\System.Data.SQLite.Core.1.0.98.1\build\net45\System.Data.SQLite.Core.targets')" Project="..\packages\System.Data.SQLite.Core.1.0.98.1\build\net45\System.Data.SQLite.Core.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="'$(OS)' != 'Unix' And !Exists('..\packages\System.Data.SQLite.Core.1.0.98.1\build\net45\System.Data.SQLite.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\System.Data.SQLite.Core.1.0.98.1\build\net45\System.Data.SQLite.Core.targets'))" />
+  </Target>
 </Project>

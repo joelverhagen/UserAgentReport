@@ -1,14 +1,12 @@
 ﻿using System;
 using System.IO;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Http;
 using Newtonsoft.Json;
 
-namespace Knapcode.UserAgentReport.WebApi.BusinessLogic
+namespace Knapcode.UserAgentReport.Reporting
 {
     public class UserAgentDatabaseUpdater
     {
@@ -25,11 +23,7 @@ namespace Knapcode.UserAgentReport.WebApi.BusinessLogic
             // get the database
             var client = new HttpClient();
             var response = await client.GetAsync(_settings.DatabaseUri, cancellationToken);
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                throw new HttpResponseException(response);
-            }
-
+            response.EnsureSuccessStatusCode();
             var networkStream = await response.Content.ReadAsStreamAsync();
 
             // aquire a lock

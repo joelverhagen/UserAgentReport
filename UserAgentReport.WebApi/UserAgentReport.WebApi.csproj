@@ -72,18 +72,9 @@
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BusinessLogic\Singletons.cs" />
-    <Compile Include="BusinessLogic\JsonSerialization.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="BusinessLogic\UserAgentAndCount.cs" />
-    <Compile Include="BusinessLogic\UserAgentDatabase.cs" />
-    <Compile Include="BusinessLogic\UserAgentType.cs" />
+    <Compile Include="BusinessLogic\Singletons.cs" />
     <Compile Include="Controllers\ManagementController.cs" />
-    <Compile Include="BusinessLogic\SemaphoreSlimHandle.cs" />
-    <Compile Include="BusinessLogic\UserAgentDatabaseUpdater.cs" />
-    <Compile Include="BusinessLogic\UserAgentDatabaseUpdaterSettings.cs" />
-    <Compile Include="BusinessLogic\UserAgentDatabaseStatus.cs" />
-    <Compile Include="BusinessLogic\UserAgentDatabaseStatusType.cs" />
     <Compile Include="Controllers\UserAgentController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -107,6 +98,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\UserAgentReport\UserAgentReport.csproj">
+      <Project>{63C0E3BA-D79E-42FB-816F-147BFE12B096}</Project>
+      <Name>UserAgentReport</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

@@ -1,6 +1,6 @@
 using System;
 
-namespace Knapcode.UserAgentReport.WebApi.BusinessLogic
+namespace Knapcode.UserAgentReport.Reporting
 {
     public class UserAgentDatabaseUpdaterSettings
     {

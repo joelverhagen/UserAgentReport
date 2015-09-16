@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Web;
 using System.Web.Http;
-using Knapcode.UserAgentReport.WebApi.BusinessLogic;
+using Knapcode.UserAgentReport.Reporting;
 
 namespace Knapcode.UserAgentReport.WebApi
 {

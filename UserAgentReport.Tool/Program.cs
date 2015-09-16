@@ -1,11 +1,9 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using Knapcode.UserAgentReport.AccessLogs;
 using Knapcode.UserAgentReport.Reporting;
-using Newtonsoft.Json;
 
-namespace Knapcode.UserAgentReport
+namespace Knapcode.UserAgentReport.Tool
 {
     public class Program
     {
@@ -21,10 +19,6 @@ namespace Knapcode.UserAgentReport
                 Console.Error.WriteLine();
                 Console.Error.WriteLine("  -populate       Read the latest access logs and populate the user agent database.");
                 Console.Error.WriteLine();
-                Console.Error.WriteLine("  -query          Query the user agent database for the user agents and dump the results to STDOUT.");
-                Console.Error.WriteLine();
-                Console.Error.WriteLine("  -pretty         Output the results of the query in indented JSON.");
-                Console.Error.WriteLine();
                 Console.Error.WriteLine("  -db PATH        Read and write to the database at the provided path.");
                 Console.Error.WriteLine("                  Default: 'user_agents.sqlite3' in the application directory.");
                 Console.Error.WriteLine();
@@ -38,7 +32,7 @@ namespace Knapcode.UserAgentReport
             var databasePath = args.GetOption("db", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "user_agents.sqlite3"));
 
             // initialize
-            var database = new Database(databasePath, Console.Error, new CustomAccessLogParser());
+            var database = new UserAgentDatabase(databasePath, Console.Error, new CustomAccessLogParser());
 
             // populate
             if (args.HasOption("populate"))
@@ -46,14 +40,6 @@ namespace Knapcode.UserAgentReport
                 string logPattern = Path.GetFileName(logDirectory);
                 logDirectory = Path.GetDirectoryName(logDirectory);
                 database.Populate(logDirectory, logPattern);
-            }
-            
-            // query
-            if (args.HasOption("query"))
-            {
-                var counts = database.Query().ToArray();
-                Formatting formatting = args.HasOption("pretty") ? Formatting.Indented : Formatting.None;
-                Console.WriteLine(JsonConvert.SerializeObject(counts, formatting));
             }
             
             return 0;
