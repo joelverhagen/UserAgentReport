@@ -19,17 +19,12 @@ namespace Knapcode.UserAgentReport.WebApi.Controllers
         }
 
         [HttpGet, Route("api/v1/top-user-agents")]
-        public async Task<IEnumerable<UserAgentAndCount>> GetTopUserAgentsAsync(
+        public async Task<IEnumerable<TopUserAgent>> GetTopUserAgentsAsync(
             CancellationToken cancellationToken,
             int limit = 50,
             bool bots = false,
             bool browsers = true)
         {
-            if (_updater.GetStatus().Type != UserAgentDatabaseStatusType.Updated)
-            {
-                await _updater.UpdateAsync(cancellationToken);
-            }
-
             return _database.GetTopUserAgents(limit, bots, browsers);
         }
     }

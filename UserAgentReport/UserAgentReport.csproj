@@ -64,7 +64,7 @@
     <Compile Include="AccessLogs\RegexAccessLogParser.cs" />
     <Compile Include="Reporting\JsonSerialization.cs" />
     <Compile Include="Reporting\SemaphoreSlimHandle.cs" />
-    <Compile Include="Reporting\UserAgentAndCount.cs" />
+    <Compile Include="Reporting\TopUserAgent.cs" />
     <Compile Include="Reporting\UserAgentDatabase.cs" />
     <Compile Include="Reporting\UserAgentDatabaseStatus.cs" />
     <Compile Include="Reporting\UserAgentDatabaseStatusType.cs" />

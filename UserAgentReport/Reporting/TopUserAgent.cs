@@ -2,7 +2,7 @@
 
 namespace Knapcode.UserAgentReport.Reporting
 {
-    public class UserAgentAndCount
+    public class TopUserAgent
     {
         public string UserAgent { get; set; }
         public UserAgentType Type { get; set; }

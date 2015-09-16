@@ -49,6 +49,7 @@ namespace Knapcode.UserAgentReport.Reporting
             "go _._ package http",
             "nutch-%",
             "Ruby",
+            "%ia_archiver%",
             "%com.apple.WebKit.WebContent%",
             "%Google Web Preview%",
             "curl/%",
@@ -69,7 +70,7 @@ namespace Knapcode.UserAgentReport.Reporting
             _parser = parser;
         }
 
-        public IEnumerable<UserAgentAndCount> GetTopUserAgents(int limit, bool includeBots, bool includeBrowsers)
+        public IEnumerable<TopUserAgent> GetTopUserAgents(int limit, bool includeBots, bool includeBrowsers)
         {
             using (var connection = GetConnection(true))
             {
@@ -80,17 +81,6 @@ namespace Knapcode.UserAgentReport.Reporting
                     command.Parameters.Add("@limit", DbType.Int32).Value = limit;
                     command.Parameters.Add("@browser", DbType.Int32).Value = UserAgentType.Browser;
                     command.Parameters.Add("@bot", DbType.Int32).Value = UserAgentType.Bot;
-
-                    // determine if a user agent is a bot
-                    var isBotConditions = new List<string>();
-                    foreach (var botKeyword in BotKeywords)
-                    {
-                        var parameterName = "@botKeyword" + isBotConditions.Count;
-                        command.Parameters.Add(parameterName, DbType.String).Value = botKeyword;
-                        isBotConditions.Add("user_agent LIKE " + parameterName);
-                    }
-
-                    var isBotCondition = string.Join(" OR ", isBotConditions);
 
                     // determine if a user agent should be included
                     var includeConditions = new List<string>();
@@ -108,52 +98,22 @@ namespace Knapcode.UserAgentReport.Reporting
 
                     // build the query
                     command.CommandType = CommandType.Text;
-                    command.CommandText = @"DROP TABLE IF EXISTS _matched_user_agents;
-CREATE TEMP TABLE _matched_user_agents (id INTEGER, user_agent TEXT, type INTEGER);
-
-INSERT INTO _matched_user_agents (id, user_agent, type)
-SELECT
-    id,
-    user_agent,
-    type
-FROM (
-    SELECT
-        id,
-        user_agent,
-        CASE WHEN " + isBotCondition + @" THEN @bot ELSE @browser END AS type
-    FROM user_agents
-)
-" + includeCondition + @";
-
+                    command.CommandText = @"
 SELECT
     user_agent,
     type,
     [count],
     first_seen,
     last_seen
-FROM (
-    SELECT
-        MIN(ua.user_agent) AS user_agent,
-        ua.type AS type,
-        COUNT(*) AS [count],
-        MIN(uat.date_time) AS first_seen,
-        MAX(uat.date_time) AS last_seen
-    FROM _matched_user_agents ua
-    INNER JOIN user_agent_times uat
-    ON ua.id = uat.user_agent_id
-    GROUP BY ua.id
-)
-ORDER BY [count] DESC, last_seen DESC
-LIMIT @limit;
-
-DROP TABLE IF EXISTS _matched_user_agents;
-";
+FROM top_user_agents
+" + includeCondition + @"
+LIMIT @limit;";
                     
                     using (var reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            yield return new UserAgentAndCount
+                            yield return new TopUserAgent
                             {
                                 UserAgent = reader.GetString(0),
                                 Type = (UserAgentType) reader.GetInt32(1),
@@ -174,14 +134,92 @@ DROP TABLE IF EXISTS _matched_user_agents;
                 connection.Open();
                 InitializeLatestTables(connection);
 
+                // persist the logs
                 foreach (var filePath in Directory.EnumerateFiles(logDirectory, logPattern, SearchOption.TopDirectoryOnly))
                 {
-                    _logWriter.WriteLine("Parsing {0}...", filePath);
+                    _logWriter.WriteLine("Persisting {0}...", filePath);
                     PersistAccessLogFile(connection, filePath);
+                    break;
                 }
 
+                // build reports
+                CalculateTopUserAgents();
+                
                 SwapLatestTables(connection);
                 Vacuum(connection);
+            }
+        }
+
+        private void CalculateTopUserAgents()
+        {
+            using (var connection = GetConnection(false))
+            {
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    // add parameters
+                    command.Parameters.Add("@browser", DbType.Int32).Value = UserAgentType.Browser;
+                    command.Parameters.Add("@bot", DbType.Int32).Value = UserAgentType.Bot;
+
+                    // determine if a user agent is a bot
+                    var isBotConditions = new List<string>();
+                    foreach (var botKeyword in BotKeywords)
+                    {
+                        var parameterName = "@botKeyword" + isBotConditions.Count;
+                        command.Parameters.Add(parameterName, DbType.String).Value = botKeyword;
+                        isBotConditions.Add("user_agent LIKE " + parameterName);
+                    }
+
+                    var isBotCondition = string.Join(" OR ", isBotConditions);
+
+                    // build the query
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = @"
+DROP TABLE IF EXISTS _matched_user_agents;
+CREATE TEMP TABLE _matched_user_agents (id INTEGER, user_agent TEXT, type INTEGER);
+
+INSERT INTO _matched_user_agents (id, user_agent, type)
+SELECT
+    id,
+    user_agent,
+    type
+FROM (
+    SELECT
+        id,
+        user_agent,
+        CASE WHEN " + isBotCondition + @" THEN @bot ELSE @browser END AS type
+    FROM user_agents_latest
+);
+
+INSERT INTO top_user_agents_latest (user_agent_id, user_agent, type, [count], first_seen, last_seen)
+SELECT
+    user_agent_id,
+    user_agent,
+    type,
+    [count],
+    first_seen,
+    last_seen
+FROM (
+    SELECT
+        ua.id AS user_agent_id,
+        MIN(ua.user_agent) AS user_agent,
+        ua.type AS type,
+        COUNT(*) AS [count],
+        MIN(uat.date_time) AS first_seen,
+        MAX(uat.date_time) AS last_seen
+    FROM _matched_user_agents ua
+    INNER JOIN user_agent_times_latest uat
+    ON ua.id = uat.user_agent_id
+    GROUP BY ua.id
+)
+ORDER BY [count] DESC, last_seen DESC;
+
+DROP TABLE IF EXISTS _matched_user_agents;
+";
+
+                    // execute the query
+                    command.ExecuteNonQuery();
+                }
             }
         }
 
@@ -194,16 +232,20 @@ DROP TABLE IF EXISTS _matched_user_agents;
         {
             Execute(connection, "DROP TABLE IF EXISTS user_agents_latest; " +
                                 "DROP TABLE IF EXISTS user_agent_times_latest; " +
+                                "DROP TABLE IF EXISTS top_user_agents_latest; " +
                                 "CREATE TABLE user_agents_latest (id INTEGER PRIMARY KEY, user_agent TEXT UNIQUE); " +
-                                "CREATE TABLE user_agent_times_latest (user_agent_id INTEGER, date_time INTEGER);");
+                                "CREATE TABLE user_agent_times_latest (user_agent_id INTEGER, date_time INTEGER); " +
+                                "CREATE TABLE top_user_agents_latest (user_agent_id INTEGER, user_agent TEXT, type INTEGER, [count] INTEGER, first_seen INTEGER, last_seen INTEGER); ");
         }
 
         private void SwapLatestTables(SQLiteConnection connection)
         {
-            Execute(connection, "DROP TABLE IF EXISTS user_agents;" +
+            Execute(connection, "DROP TABLE IF EXISTS user_agents; " +
                                 "DROP TABLE IF EXISTS user_agent_times; " +
+                                "DROP TABLE IF EXISTS top_user_agents; " +
                                 "ALTER TABLE user_agents_latest RENAME TO user_agents; " +
-                                "ALTER TABLE user_agent_times_latest RENAME TO user_agent_times;");
+                                "ALTER TABLE user_agent_times_latest RENAME TO user_agent_times; " +
+                                "ALTER TABLE top_user_agents_latest RENAME TO top_user_agents; ");
         }
 
         private void PersistEntry(SQLiteConnection connection, AccessLogEntry entry)
@@ -247,7 +289,7 @@ DROP TABLE IF EXISTS _matched_user_agents;
                 }
             }
 
-            // persiste the user agent time
+            // persist the user agent time
             using (var command = connection.CreateCommand())
             {
                 command.CommandText = "INSERT INTO user_agent_times_latest (user_agent_id, date_time) VALUES (@user_agent_id, @date_time)";
