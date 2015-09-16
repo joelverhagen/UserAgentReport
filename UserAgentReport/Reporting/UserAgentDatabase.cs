@@ -132,6 +132,8 @@ LIMIT @limit;";
             using (var connection = GetConnection(false))
             {
                 connection.Open();
+
+                _logWriter.WriteLine("Initializing tables for the latest data...");
                 InitializeLatestTables(connection);
 
                 // persist the logs
@@ -143,9 +145,13 @@ LIMIT @limit;";
                 }
 
                 // build reports
+                _logWriter.WriteLine("Calculating the top user agents...");
                 CalculateTopUserAgents();
-                
+
+                _logWriter.WriteLine("Swapping the old data for the latest data...");
                 SwapLatestTables(connection);
+
+                _logWriter.WriteLine("Vacuuming the database...");
                 Vacuum(connection);
             }
         }
