@@ -71,7 +71,7 @@ namespace Knapcode.UserAgentReport.Reporting
 
         public IEnumerable<UserAgentAndCount> GetTopUserAgents(int limit, bool includeBots, bool includeBrowsers)
         {
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             {
                 connection.Open();
                 using (var command = connection.CreateCommand())
@@ -169,7 +169,7 @@ DROP TABLE IF EXISTS _matched_user_agents;
 
         public void Populate(string logDirectory, string logPattern)
         {
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(false))
             {
                 connection.Open();
                 InitializeLatestTables(connection);
@@ -294,12 +294,12 @@ DROP TABLE IF EXISTS _matched_user_agents;
             }
         }
 
-        private SQLiteConnection GetConnection()
+        private SQLiteConnection GetConnection(bool readOnly)
         {
             var builder = new SQLiteConnectionStringBuilder
             {
                 DataSource = _databasePath,
-                ReadOnly = true
+                ReadOnly = readOnly
             };
 
             return new SQLiteConnection(builder.ConnectionString);
