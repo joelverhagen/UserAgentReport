@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
 		README.md = README.md
+		website_sync.sh = website_sync.sh
+		website_warmup.sh = website_warmup.sh
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserAgentReport.Tool", "UserAgentReport.Tool\UserAgentReport.Tool.csproj", "{C9C856EA-F001-4CA9-8F8E-C23A80F935F8}"
