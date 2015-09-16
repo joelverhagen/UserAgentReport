@@ -141,7 +141,6 @@ LIMIT @limit;";
                 {
                     _logWriter.WriteLine("Persisting {0}...", filePath);
                     PersistAccessLogFile(connection, filePath);
-                    break;
                 }
 
                 // build reports
