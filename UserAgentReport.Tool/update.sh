@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-TOOL=$DIR/Knapcode.UserAgentReport.exe
+TOOL=$DIR/Knapcode.UserAgentReport.Tool.exe
 LATEST=$DIR/user-agents-latest
 
 rm -f $LATEST.sqlite3
