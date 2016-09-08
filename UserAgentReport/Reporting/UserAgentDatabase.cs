@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
@@ -78,9 +78,9 @@ namespace Knapcode.UserAgentReport.Reporting
                 using (var command = connection.CreateCommand())
                 {
                     // add parameters
-                    command.Parameters.Add("@limit", DbType.Int32).Value = limit;
-                    command.Parameters.Add("@browser", DbType.Int32).Value = UserAgentType.Browser;
-                    command.Parameters.Add("@bot", DbType.Int32).Value = UserAgentType.Bot;
+                    command.Parameters.Add("@limit", SqliteType.Integer).Value = limit;
+                    command.Parameters.Add("@browser", SqliteType.Integer).Value = UserAgentType.Browser;
+                    command.Parameters.Add("@bot", SqliteType.Integer).Value = UserAgentType.Bot;
 
                     // determine if a user agent should be included
                     var includeConditions = new List<string>();
@@ -163,15 +163,15 @@ LIMIT @limit;";
                 using (var command = connection.CreateCommand())
                 {
                     // add parameters
-                    command.Parameters.Add("@browser", DbType.Int32).Value = UserAgentType.Browser;
-                    command.Parameters.Add("@bot", DbType.Int32).Value = UserAgentType.Bot;
+                    command.Parameters.Add("@browser", SqliteType.Integer).Value = UserAgentType.Browser;
+                    command.Parameters.Add("@bot", SqliteType.Integer).Value = UserAgentType.Bot;
 
                     // determine if a user agent is a bot
                     var isBotConditions = new List<string>();
                     foreach (var botKeyword in BotKeywords)
                     {
                         var parameterName = "@botKeyword" + isBotConditions.Count;
-                        command.Parameters.Add(parameterName, DbType.String).Value = botKeyword;
+                        command.Parameters.Add(parameterName, SqliteType.Text).Value = botKeyword;
                         isBotConditions.Add("user_agent LIKE " + parameterName);
                     }
 
@@ -228,12 +228,12 @@ DROP TABLE IF EXISTS _matched_user_agents;
             }
         }
 
-        private void Vacuum(SQLiteConnection connection)
+        private void Vacuum(SqliteConnection connection)
         {
             Execute(connection, "VACUUM");
         }
 
-        private void InitializeLatestTables(SQLiteConnection connection)
+        private void InitializeLatestTables(SqliteConnection connection)
         {
             Execute(connection, "DROP TABLE IF EXISTS user_agents_latest; " +
                                 "DROP TABLE IF EXISTS user_agent_times_latest; " +
@@ -243,7 +243,7 @@ DROP TABLE IF EXISTS _matched_user_agents;
                                 "CREATE TABLE top_user_agents_latest (user_agent_id INTEGER, user_agent TEXT, type INTEGER, [count] INTEGER, first_seen INTEGER, last_seen INTEGER); ");
         }
 
-        private void SwapLatestTables(SQLiteConnection connection)
+        private void SwapLatestTables(SqliteConnection connection)
         {
             Execute(connection, "DROP TABLE IF EXISTS user_agents; " +
                                 "DROP TABLE IF EXISTS user_agent_times; " +
@@ -253,7 +253,7 @@ DROP TABLE IF EXISTS _matched_user_agents;
                                 "ALTER TABLE top_user_agents_latest RENAME TO top_user_agents; ");
         }
 
-        private void PersistEntry(SQLiteConnection connection, AccessLogEntry entry)
+        private void PersistEntry(SqliteConnection connection, AccessLogEntry entry)
         {
             if (!entry.Time.HasValue)
             {
@@ -265,7 +265,7 @@ DROP TABLE IF EXISTS _matched_user_agents;
             using (var command = connection.CreateCommand())
             {
                 command.CommandText = "SELECT id FROM user_agents_latest WHERE user_agent = @user_agent";
-                command.Parameters.Add("@user_agent", DbType.String).Value = entry.UserAgent;
+                command.Parameters.Add("@user_agent", SqliteType.Text).Value = entry.UserAgent;
                 using (var commandReader = command.ExecuteReader())
                 {
                     if (commandReader.Read())
@@ -285,7 +285,7 @@ DROP TABLE IF EXISTS _matched_user_agents;
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText = "INSERT INTO user_agents_latest (user_agent) VALUES (@user_agent); SELECT last_insert_rowid();";
-                    command.Parameters.Add("@user_agent", DbType.String).Value = entry.UserAgent;
+                    command.Parameters.Add("@user_agent", SqliteType.Text).Value = entry.UserAgent;
                     using (var commandReader = command.ExecuteReader())
                     {
                         commandReader.Read();
@@ -298,13 +298,13 @@ DROP TABLE IF EXISTS _matched_user_agents;
             using (var command = connection.CreateCommand())
             {
                 command.CommandText = "INSERT INTO user_agent_times_latest (user_agent_id, date_time) VALUES (@user_agent_id, @date_time)";
-                command.Parameters.Add("@user_agent_id", DbType.Int64).Value = id;
-                command.Parameters.Add("@date_time", DbType.Int64).Value = entry.Time.Value.UtcTicks;
+                command.Parameters.Add("@user_agent_id", SqliteType.Integer).Value = id;
+                command.Parameters.Add("@date_time", SqliteType.Integer).Value = entry.Time.Value.UtcTicks;
                 command.ExecuteNonQuery();
             }
         }
 
-        private void PersistAccessLogFile(SQLiteConnection connection, string filePath)
+        private void PersistAccessLogFile(SqliteConnection connection, string filePath)
         {
             Execute(connection, "BEGIN");
 
@@ -332,7 +332,7 @@ DROP TABLE IF EXISTS _matched_user_agents;
             Execute(connection, "COMMIT");
         }
 
-        private static void Execute(SQLiteConnection connection, string sql)
+        private static void Execute(SqliteConnection connection, string sql)
         {
             using (var command = connection.CreateCommand())
             {
@@ -341,15 +341,15 @@ DROP TABLE IF EXISTS _matched_user_agents;
             }
         }
 
-        private SQLiteConnection GetConnection(bool readOnly)
+        private SqliteConnection GetConnection(bool readOnly)
         {
-            var builder = new SQLiteConnectionStringBuilder
+            var builder = new SqliteConnectionStringBuilder
             {
                 DataSource = _databasePath,
-                ReadOnly = readOnly
-            };
+                Mode = readOnly ? SqliteOpenMode.ReadOnly : SqliteOpenMode.ReadWriteCreate
+            };           
 
-            return new SQLiteConnection(builder.ConnectionString);
+            return new SqliteConnection(builder.ConnectionString);
         }
     }
 }

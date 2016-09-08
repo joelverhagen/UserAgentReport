@@ -1,17 +1,33 @@
 ﻿using System.IO;
+using System.Net.Http.Formatting;
 using System.Web;
 using System.Web.Http;
-using Knapcode.UserAgentReport.Reporting;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Knapcode.UserAgentReport.WebApi
 {
     public static class WebApiConfig
     {
+        public static JsonMediaTypeFormatter JsonMediaTypeFormatter => new JsonMediaTypeFormatter
+        {
+            SerializerSettings = new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                Converters =
+                {
+                    new StringEnumConverter(),
+                    new IsoDateTimeConverter()
+                }
+            },
+            UseDataContractJsonSerializer = false
+        };
+
         public static void Register(HttpConfiguration config)
         {
             // Web API configuration and services
             config.Formatters.Clear();
-            config.Formatters.Add(JsonSerialization.MediaTypeFormatter);
+            config.Formatters.Add(JsonMediaTypeFormatter);
 
             // Web API routes
             config.MapHttpAttributeRoutes();
