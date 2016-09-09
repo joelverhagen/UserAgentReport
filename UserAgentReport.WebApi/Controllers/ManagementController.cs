@@ -19,8 +19,9 @@ namespace Knapcode.UserAgentReport.WebApi.Controllers
 
         [HttpPost("api/v1/management/update-user-agent-database")]
         public async Task<IActionResult> UpdateUserAgentDatabaseAsync(
-            [FromHeader] string accessToken = null,
-            CancellationToken cancellationToken = default(CancellationToken))
+            [FromBody] UserAgentDatabaseUpdateRequest request,
+            [FromHeader] string accessToken,
+            CancellationToken cancellationToken)
         {
             if (!string.IsNullOrEmpty(_options.Value.AccessToken) &&
                 accessToken != _options.Value.AccessToken)
@@ -28,7 +29,12 @@ namespace Knapcode.UserAgentReport.WebApi.Controllers
                 return Unauthorized();
             }
 
-            var result = await _updater.UpdateAsync(cancellationToken);
+            if (request == null || request.DatabaseUri == null)
+            {
+                return BadRequest();
+            }
+
+            var result = await _updater.UpdateAsync(request, cancellationToken);
 
             return new ObjectResult(result);
         }

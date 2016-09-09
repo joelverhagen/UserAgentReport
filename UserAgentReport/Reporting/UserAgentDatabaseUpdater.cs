@@ -20,11 +20,11 @@ namespace Knapcode.UserAgentReport.Reporting
             _settings = settings;
         }
 
-        public async Task<UserAgentDatabaseStatus> UpdateAsync(CancellationToken cancellationToken)
+        public async Task<UserAgentDatabaseStatus> UpdateAsync(UserAgentDatabaseUpdateRequest request, CancellationToken cancellationToken)
         {
             // get the database
             var client = new HttpClient();
-            using (var response = await client.GetAsync(_settings.Value.DatabaseUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
+            using (var response = await client.GetAsync(request.DatabaseUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
             {
                 response.EnsureSuccessStatusCode();
                 var networkStream = await response.Content.ReadAsStreamAsync();
