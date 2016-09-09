@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using Knapcode.UserAgentReport.AccessLogs;
 using Knapcode.UserAgentReport.Reporting;
@@ -39,6 +38,7 @@ namespace Knapcode.UserAgentReport.WebApi
         {
             services.AddOptions();
             services.Configure<UserAgentDatabaseUpdaterSettings>(Configuration);
+            services.Configure<WebsiteSettings>(Configuration);
 
             services.AddSingleton<UserAgentDatabaseUpdater>();
             services.AddTransient<IAccessLogParser, CustomAccessLogParser>();
