@@ -219,3 +219,8 @@ _Pvt_Extensions
 # Configuration
 appsettings.Development.json
 appsettings.Production.json
+
+# Data
+user-agent-database-status.json
+user-agents.sqlite3
+user-agents-l
