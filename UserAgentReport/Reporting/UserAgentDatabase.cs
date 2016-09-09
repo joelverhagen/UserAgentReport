@@ -72,6 +72,8 @@ namespace Knapcode.UserAgentReport.Reporting
 
         public IEnumerable<TopUserAgent> GetTopUserAgents(int limit, bool includeBots, bool includeBrowsers)
         {
+            var output = new List<TopUserAgent>();
+
             using (var connection = GetConnection(true))
             {
                 connection.Open();
@@ -113,18 +115,20 @@ LIMIT @limit;";
                     {
                         while (reader.Read())
                         {
-                            yield return new TopUserAgent
+                            output.Add(new TopUserAgent
                             {
                                 UserAgent = reader.GetString(0),
                                 Type = (UserAgentType) reader.GetInt32(1),
                                 Count = reader.GetInt32(2),
                                 FirstSeen = new DateTimeOffset(reader.GetInt64(3), TimeSpan.Zero),
                                 LastSeen = new DateTimeOffset(reader.GetInt64(4), TimeSpan.Zero)
-                            };
+                            });
                         }
                     }
                 }
             }
+
+            return output;
         }
 
         public void Populate(string logDirectory, string logPattern)

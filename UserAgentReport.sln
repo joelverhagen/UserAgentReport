@@ -1,12 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserAgentReport", "UserAgentReport\UserAgentReport.csproj", "{63C0E3BA-D79E-42FB-816F-147BFE12B096}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserAgentReport.WebApi", "UserAgentReport.WebApi\UserAgentReport.WebApi.csproj", "{5A5F8356-09BC-4A08-B54F-F1EDC2BE4AC8}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DC286097-1322-4FDE-94A6-347A82974035}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
@@ -15,7 +11,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		website_warmup.sh = website_warmup.sh
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserAgentReport.Tool", "UserAgentReport.Tool\UserAgentReport.Tool.csproj", "{C9C856EA-F001-4CA9-8F8E-C23A80F935F8}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "UserAgentReport", "UserAgentReport\UserAgentReport.xproj", "{DEFB3A0A-2CD5-432F-8863-C719C54B9935}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "UserAgentReport.Tool", "UserAgentReport.Tool\UserAgentReport.Tool.xproj", "{9D1F9A7F-5D69-4845-A8EB-B0C299796D17}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "UserAgentReport.WebApi", "UserAgentReport.WebApi\UserAgentReport.WebApi.xproj", "{43F82556-AA39-4B52-BB03-682F26C489F1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,18 +23,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{63C0E3BA-D79E-42FB-816F-147BFE12B096}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{63C0E3BA-D79E-42FB-816F-147BFE12B096}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{63C0E3BA-D79E-42FB-816F-147BFE12B096}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{63C0E3BA-D79E-42FB-816F-147BFE12B096}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5A5F8356-09BC-4A08-B54F-F1EDC2BE4AC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5A5F8356-09BC-4A08-B54F-F1EDC2BE4AC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5A5F8356-09BC-4A08-B54F-F1EDC2BE4AC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5A5F8356-09BC-4A08-B54F-F1EDC2BE4AC8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C9C856EA-F001-4CA9-8F8E-C23A80F935F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C9C856EA-F001-4CA9-8F8E-C23A80F935F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C9C856EA-F001-4CA9-8F8E-C23A80F935F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C9C856EA-F001-4CA9-8F8E-C23A80F935F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DEFB3A0A-2CD5-432F-8863-C719C54B9935}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEFB3A0A-2CD5-432F-8863-C719C54B9935}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEFB3A0A-2CD5-432F-8863-C719C54B9935}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DEFB3A0A-2CD5-432F-8863-C719C54B9935}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D1F9A7F-5D69-4845-A8EB-B0C299796D17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D1F9A7F-5D69-4845-A8EB-B0C299796D17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D1F9A7F-5D69-4845-A8EB-B0C299796D17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D1F9A7F-5D69-4845-A8EB-B0C299796D17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43F82556-AA39-4B52-BB03-682F26C489F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43F82556-AA39-4B52-BB03-682F26C489F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43F82556-AA39-4B52-BB03-682F26C489F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43F82556-AA39-4B52-BB03-682F26C489F1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

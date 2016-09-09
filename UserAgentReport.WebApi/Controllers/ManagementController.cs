@@ -1,27 +1,26 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Http;
 using Knapcode.UserAgentReport.Reporting;
-using Knapcode.UserAgentReport.WebApi.BusinessLogic;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Knapcode.UserAgentReport.WebApi.Controllers
 {
-    public class ManagementController : ApiController
+    public class ManagementController : Controller
     {
         private readonly UserAgentDatabaseUpdater _updater;
 
-        public ManagementController()
+        public ManagementController(UserAgentDatabaseUpdater updater)
         {
-            _updater = Singletons.UserAgentDatabaseUpdater;
+            _updater = updater;
         }
 
-        [HttpPost, Route("api/v1/management/update-user-agent-database")]
+        [HttpPost("api/v1/management/update-user-agent-database")]
         public async Task<UserAgentDatabaseStatus> UpdateUserAgentDatabaseAsync(CancellationToken cancellationToken)
         {
             return await _updater.UpdateAsync(cancellationToken);
         }
 
-        [HttpGet, Route("api/v1/management/user-agent-database-status")]
+        [HttpGet("api/v1/management/user-agent-database-status")]
         public UserAgentDatabaseStatus GetUserAgentDatabaseStatus()
         {
             return _updater.GetStatus();

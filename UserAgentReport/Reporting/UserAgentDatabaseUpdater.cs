@@ -10,6 +10,7 @@ namespace Knapcode.UserAgentReport.Reporting
 {
     public class UserAgentDatabaseUpdater
     {
+        private const int BufferSize = 4096;
         private static readonly SemaphoreSlim SemaphoreSlim = new SemaphoreSlim(1);
         private readonly UserAgentDatabaseUpdaterSettings _settings;
 
@@ -22,34 +23,38 @@ namespace Knapcode.UserAgentReport.Reporting
         {
             // get the database
             var client = new HttpClient();
-            var response = await client.GetAsync(_settings.DatabaseUri, cancellationToken);
-            response.EnsureSuccessStatusCode();
-            var networkStream = await response.Content.ReadAsStreamAsync();
-
-            // aquire a lock
-            await SemaphoreSlim.WaitAsync(cancellationToken);
-            using (new SemaphoreSlimHandle(SemaphoreSlim))
+            using (var response = await client.GetAsync(_settings.DatabaseUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
             {
-                // set the status to updating
-                await WriteStatusAsync(UserAgentDatabaseStatusType.Updating);
+                response.EnsureSuccessStatusCode();
+                var networkStream = await response.Content.ReadAsStreamAsync();
 
-                // download the database
-                using (networkStream)
-                using (var fileStream = new FileStream(_settings.TemporaryDatabasePath, FileMode.Create, FileAccess.Write))
+                // aquire a lock
+                await SemaphoreSlim.WaitAsync(cancellationToken);
+                using (new SemaphoreSlimHandle(SemaphoreSlim))
                 {
-                    await networkStream.CopyToAsync(fileStream, 4096, cancellationToken);
+                    // set the status to updating
+                    await WriteStatusAsync(UserAgentDatabaseStatusType.Updating);
+
+                    var temporaryDatabasePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+                    // download the database
+                    using (networkStream)
+                    using (var fileStream = new FileStream(
+                        temporaryDatabasePath,
+                        FileMode.Create,
+                        FileAccess.ReadWrite,
+                        FileShare.Read,
+                        BufferSize,
+                        FileOptions.DeleteOnClose | FileOptions.Asynchronous))
+                    {
+                        await networkStream.CopyToAsync(fileStream, BufferSize, cancellationToken);
+
+                        File.Copy(temporaryDatabasePath, _settings.DatabasePath, overwrite: true);
+                    }
+
+                    // set the status to updated
+                    return await WriteStatusAsync(UserAgentDatabaseStatusType.Updated);
                 }
-
-                // replace the existing database
-                if (File.Exists(_settings.DatabasePath))
-                {
-                    File.Delete(_settings.DatabasePath);
-                }
-
-                File.Move(_settings.TemporaryDatabasePath, _settings.DatabasePath);
-
-                // set the status to updated
-                return await WriteStatusAsync(UserAgentDatabaseStatusType.Updated);
             }
         }
 

@@ -1,20 +1,19 @@
 ﻿using System.Collections.Generic;
-using System.Web.Http;
 using Knapcode.UserAgentReport.Reporting;
-using Knapcode.UserAgentReport.WebApi.BusinessLogic;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Knapcode.UserAgentReport.WebApi.Controllers
 {
-    public class UserAgentController : ApiController
+    public class UserAgentController : Controller
     {
         private readonly UserAgentDatabase _database;
 
-        public UserAgentController()
+        public UserAgentController(UserAgentDatabase database)
         {
-            _database = Singletons.UserAgentDatabase;
+            _database = database;
         }
 
-        [HttpGet, Route("api/v1/top-user-agents")]
+        [HttpGet("api/v1/top-user-agents")]
         public IEnumerable<TopUserAgent> GetTopUserAgentsAsync(int limit = 10, bool bots = false, bool browsers = true)
         {
             return _database.GetTopUserAgents(limit, bots, browsers);
