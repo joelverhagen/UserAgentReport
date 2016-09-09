@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using Microsoft.Data.Sqlite;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
 using Knapcode.UserAgentReport.AccessLogs;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Options;
 
 namespace Knapcode.UserAgentReport.Reporting
@@ -75,7 +75,7 @@ namespace Knapcode.UserAgentReport.Reporting
         {
             var output = new List<TopUserAgent>();
 
-            if (File.Exists(_settings.Value.DatabasePath))
+            if (!File.Exists(_settings.Value.DatabasePath))
             {
                 return output;
             }
