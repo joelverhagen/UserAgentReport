@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Knapcode.UserAgentReport.AccessLogs;
 using Knapcode.UserAgentReport.Reporting;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -18,6 +20,12 @@ namespace Knapcode.UserAgentReport.WebApi
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
+                .AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    { "RefreshPeriod", "06:00:00" },
+                    { "DatabasePath", Path.Combine(env.ContentRootPath, "user-agents.sqlite3") },
+                    { "StatusPath", Path.Combine(env.ContentRootPath, "user-agent-database-status.json") }
+                })
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
@@ -29,31 +37,19 @@ namespace Knapcode.UserAgentReport.WebApi
         
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddOptions();
+            services.Configure<UserAgentDatabaseUpdaterSettings>(Configuration);
+
+            services.AddSingleton<UserAgentDatabaseUpdater>();
             services.AddTransient<IAccessLogParser, CustomAccessLogParser>();
-
-            services.AddTransient(serviceProvider =>
-            {
-                var env = serviceProvider.GetRequiredService<IHostingEnvironment>();
-
-                return new UserAgentDatabaseUpdaterSettings
-                {
-                    RefreshPeriod = TimeSpan.FromHours(6),
-                    DatabasePath = Path.Combine(env.ContentRootPath, "user-agents.sqlite3"),
-                    StatusPath = Path.Combine(env.ContentRootPath, "user-agent-database-status.json"),
-                    DatabaseUri = new Uri("http://prancer.knapcode.com/data/user-agents.sqlite3")
-                };
-            });
-
             services.AddSingleton(serviceProvider =>
             {
-                var settings = serviceProvider.GetRequiredService<UserAgentDatabaseUpdaterSettings>();
+                var settings = serviceProvider.GetRequiredService<IOptions<UserAgentDatabaseUpdaterSettings>>();
                 var parser = serviceProvider.GetRequiredService<IAccessLogParser>();
 
-                return new UserAgentDatabase(settings.DatabasePath, TextWriter.Null, parser);
+                return new UserAgentDatabase(settings, TextWriter.Null, parser);
             });
             
-            services.AddSingleton<UserAgentDatabaseUpdater>();
-
             services
                 .AddMvc()
                 .AddJsonOptions(options =>

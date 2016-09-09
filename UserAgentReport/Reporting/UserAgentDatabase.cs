@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using Knapcode.UserAgentReport.AccessLogs;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.UserAgentReport.Reporting
 {
@@ -58,14 +59,14 @@ namespace Knapcode.UserAgentReport.Reporting
             "%DigExt%",
             "-"
         };
-
-        private readonly string _databasePath;
+        
         private readonly TextWriter _logWriter;
         private readonly IAccessLogParser _parser;
+        private readonly IOptions<UserAgentDatabaseUpdaterSettings> _settings;
 
-        public UserAgentDatabase(string databasePath, TextWriter logWriter, IAccessLogParser parser)
+        public UserAgentDatabase(IOptions<UserAgentDatabaseUpdaterSettings> settings, TextWriter logWriter, IAccessLogParser parser)
         {
-            _databasePath = databasePath;
+            _settings = settings;
             _logWriter = logWriter;
             _parser = parser;
         }
@@ -73,6 +74,11 @@ namespace Knapcode.UserAgentReport.Reporting
         public IEnumerable<TopUserAgent> GetTopUserAgents(int limit, bool includeBots, bool includeBrowsers)
         {
             var output = new List<TopUserAgent>();
+
+            if (File.Exists(_settings.Value.DatabasePath))
+            {
+                return output;
+            }
 
             using (var connection = GetConnection(true))
             {
@@ -349,7 +355,7 @@ DROP TABLE IF EXISTS _matched_user_agents;
         {
             var builder = new SqliteConnectionStringBuilder
             {
-                DataSource = _databasePath,
+                DataSource = _settings.Value.DatabasePath,
                 Mode = readOnly ? SqliteOpenMode.ReadOnly : SqliteOpenMode.ReadWriteCreate
             };           
 

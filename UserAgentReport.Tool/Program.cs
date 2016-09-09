@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using Knapcode.UserAgentReport.AccessLogs;
 using Knapcode.UserAgentReport.Reporting;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.UserAgentReport.Tool
 {
@@ -10,12 +11,14 @@ namespace Knapcode.UserAgentReport.Tool
     {
         private static int Main(string[] args)
         {
+            args = new[] { "-logs", @"D:\Dropbox\Programming\UserAgentReport\UserAgentReport.Tool\bin\Debug\netcoreapp1.0\data\*", "-populate" };
+
             var applicationName = Assembly.GetEntryAssembly().GetName().Name;
             var baseDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 
             if (args.HasOption("help") || args.HasOption("h"))
             {
-                Console.Error.WriteLine("Usage: Knapcode.UserAgentReport.Tool OPTIONS");
+                Console.Error.WriteLine($"Usage: {applicationName} OPTIONS");
                 Console.Error.WriteLine();
                 Console.Error.WriteLine("OPTIONS can be any combination of the following:");
                 Console.Error.WriteLine();
@@ -36,7 +39,13 @@ namespace Knapcode.UserAgentReport.Tool
             var databasePath = args.GetOption("db", Path.Combine(baseDirectory, "user_agents.sqlite3"));
 
             // initialize
-            var database = new UserAgentDatabase(databasePath, Console.Error, new CustomAccessLogParser());
+            var database = new UserAgentDatabase(
+                Options.Create(new UserAgentDatabaseUpdaterSettings
+                {
+                    DatabasePath = databasePath
+                }),
+                Console.Error,
+                new CustomAccessLogParser());
 
             // populate
             if (args.HasOption("populate"))

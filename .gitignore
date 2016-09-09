@@ -216,5 +216,6 @@ FakesAssemblies/
 **/*.Server/ModelManifest.xml
 _Pvt_Extensions
 
-# Include dependencies
-!Dependencies/**
+# Configuration
+appsettings.Development.json
+appsettings.Production.json

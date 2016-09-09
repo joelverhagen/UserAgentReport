@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace Knapcode.UserAgentReport.Reporting
@@ -12,9 +13,9 @@ namespace Knapcode.UserAgentReport.Reporting
     {
         private const int BufferSize = 4096;
         private static readonly SemaphoreSlim SemaphoreSlim = new SemaphoreSlim(1);
-        private readonly UserAgentDatabaseUpdaterSettings _settings;
+        private readonly IOptions<UserAgentDatabaseUpdaterSettings> _settings;
 
-        public UserAgentDatabaseUpdater(UserAgentDatabaseUpdaterSettings settings)
+        public UserAgentDatabaseUpdater(IOptions<UserAgentDatabaseUpdaterSettings> settings)
         {
             _settings = settings;
         }
@@ -23,7 +24,7 @@ namespace Knapcode.UserAgentReport.Reporting
         {
             // get the database
             var client = new HttpClient();
-            using (var response = await client.GetAsync(_settings.DatabaseUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
+            using (var response = await client.GetAsync(_settings.Value.DatabaseUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
             {
                 response.EnsureSuccessStatusCode();
                 var networkStream = await response.Content.ReadAsStreamAsync();
@@ -49,7 +50,7 @@ namespace Knapcode.UserAgentReport.Reporting
                     {
                         await networkStream.CopyToAsync(fileStream, BufferSize, cancellationToken);
 
-                        File.Copy(temporaryDatabasePath, _settings.DatabasePath, overwrite: true);
+                        File.Copy(temporaryDatabasePath, _settings.Value.DatabasePath, overwrite: true);
                     }
 
                     // set the status to updated
@@ -60,7 +61,7 @@ namespace Knapcode.UserAgentReport.Reporting
 
         private async Task<UserAgentDatabaseStatus> WriteStatusAsync(UserAgentDatabaseStatusType type)
         {
-            using (var fileStream = new FileStream(_settings.StatusPath, FileMode.Create, FileAccess.Write))
+            using (var fileStream = new FileStream(_settings.Value.StatusPath, FileMode.Create, FileAccess.Write))
             using (var writer = new StreamWriter(fileStream, new UTF8Encoding(false)))
             {
                 var status = new UserAgentDatabaseStatus {LastUpdated = DateTimeOffset.UtcNow, Type = type};
@@ -72,14 +73,15 @@ namespace Knapcode.UserAgentReport.Reporting
 
         public UserAgentDatabaseStatus GetStatus()
         {
-            if (!File.Exists(_settings.StatusPath) || !File.Exists(_settings.DatabasePath))
+            if (!File.Exists(_settings.Value.StatusPath) || !File.Exists(_settings.Value.DatabasePath))
             {
                 return new UserAgentDatabaseStatus {LastUpdated = DateTimeOffset.UtcNow, Type = UserAgentDatabaseStatusType.Unavailable};
             }
 
             // detect stale state
             var status = GetStatusFromFile();
-            if (status.Type == UserAgentDatabaseStatusType.Updated && (!status.LastUpdated.HasValue || DateTimeOffset.UtcNow - status.LastUpdated.Value > _settings.RefreshPeriod))
+            if (status.Type == UserAgentDatabaseStatusType.Updated &&
+                (!status.LastUpdated.HasValue || DateTimeOffset.UtcNow - status.LastUpdated.Value > _settings.Value.RefreshPeriod))
             {
                 status.Type = UserAgentDatabaseStatusType.Stale;
             }
@@ -89,7 +91,7 @@ namespace Knapcode.UserAgentReport.Reporting
 
         private UserAgentDatabaseStatus GetStatusFromFile()
         {
-            using (var stream = new FileStream(_settings.StatusPath, FileMode.Open, FileAccess.Read))
+            using (var stream = new FileStream(_settings.Value.StatusPath, FileMode.Open, FileAccess.Read))
             using (var streamReader = new StreamReader(stream))
             using (var jsonTextReader = new JsonTextReader(streamReader))
             {
