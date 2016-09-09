@@ -224,3 +224,6 @@ appsettings.Production.json
 user-agent-database-status.json
 user-agents.sqlite3
 user-agents-l
+
+# Publish profiles
+PublishProfiles

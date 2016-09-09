@@ -11,8 +11,6 @@ namespace Knapcode.UserAgentReport.Tool
     {
         private static int Main(string[] args)
         {
-            args = new[] { "-logs", @"D:\Dropbox\Programming\UserAgentReport\UserAgentReport.Tool\bin\Debug\netcoreapp1.0\data\*", "-populate" };
-
             var applicationName = Assembly.GetEntryAssembly().GetName().Name;
             var baseDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 
