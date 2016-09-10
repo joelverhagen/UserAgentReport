@@ -5,7 +5,7 @@
     "emitEntryPoint": true
   },
   "dependencies": {
-    "UserAgentReport": {
+    "Knapcode.UserAgentReport.Logic": {
       "target": "project"
     }
   },
